@@ -10,7 +10,7 @@
         
         public static void Main(string[] args)
         {
-            // Console.SetWindowSize(width, height); // para poner consola de tamaño COLSxFILS
+            //Console.SetWindowSize(COLS, FILS); // para poner consola de tamaño COLSxFILS
 
             Console.CursorVisible = false; // ocultamos cursor en pantalla
 
@@ -18,17 +18,17 @@
                 eneCol = 2, eneFil = 7,     //Posición inicial Enemigo
                 balaFil = -1, balaCol = 0,  //Posición inicial Bala
                 bombaCol =0 , bombaFil= -1, //Posición inicial Bomba
-                finPartida ; //0 continua el juego; 1 gana jugador; 2 gana enemigo; 3 abortar
+                finPartida ;                //0 continua el juego; 1 gana jugador; 2 gana enemigo; 3 abortar
            
             bool bombaActiva = false;       //Comprobación de si ya hay una bomba en pantalla
 
-            Console.Write("Pulsa cualquier tecla para empezar");
+            Console.Write("Pulsa cualquier tecla para empezar"); 
             
-            while (!Console.KeyAvailable) Thread.Sleep(DELTA);
+            while (!Console.KeyAvailable) Thread.Sleep(DELTA);      //Bucle del que no se sale hasta pulsar una tecla cualquiera
             Console.Clear();
-
-
             finPartida = 0;
+
+            // Bucle principal
             while (finPartida == 0)
             {
 
@@ -66,8 +66,8 @@
 
 
                 // RENDERIZADO 
-
                 Console.Clear();
+
                 RenderPlayer(jugFil, jugCol);
 
                 RenderBala(balaFil, balaCol);
@@ -76,11 +76,8 @@
 
                 RenderBomba(bombaFil, bombaCol, bombaActiva);
                 
-                // retardo
+                //Retardo
                 Thread.Sleep(DELTA);
-                
-
-
             }
             //Opciones de Fin de Partida
             Console.Clear();
@@ -95,21 +92,22 @@
             }
             Console.ForegroundColor = ConsoleColor.White;
             Thread.Sleep(FINAL);
+            Console.Clear();
+           
+            //Pantalla final para terminar el juego
             Console.WriteLine("Pulsa cualquier botón para salir.");
-
             while (!Console.KeyAvailable) Thread.Sleep(DELTA);
         }
-            // bucle ppal
             
         #region Movimiento de Entidades
-        static void MovimientoBala(ref int balaFil, ref int balaCol)
+        static void MovimientoBala(ref int balaFil, ref int balaCol) //Se mueve la bala una posicion arriba cada frame, si dicha posición
+                                                                     //sobrepasa el limite superior de la pantalla se destruye
         {
             balaCol--;
             if (balaCol < 0)
             {
                 balaFil = -1;
             }
-
         }
        
         static void MovimientoEnemigo(ref int eneFil, ref int eneCol)
@@ -117,10 +115,12 @@
             int randomEneFil = rnd.Next(eneFil - 1, eneFil + 2);
             int randomEneCol = rnd.Next(eneCol - 1, eneCol + 2);
 
-            if ((randomEneFil > 0 && randomEneCol >= 0) && (randomEneFil < FILS - 1 && randomEneCol <= (COLS - 1) / 2))
+            if ((randomEneFil > 0 && randomEneCol >= 0) && (randomEneFil < FILS - 1 && randomEneCol <= (COLS - 1) / 2)) //Se comprueba que la nueva posicón del enemigo esta
+                                                                                                                        //en pantalla y en la mitad superior de la pantalla
             {
+                //La posicion del enemigo se convierte en las posiciones aleatorias calculadas
                 eneFil = randomEneFil;
-                eneCol = randomEneCol;
+                eneCol = randomEneCol; 
             }
         }
         static void AparicionBomba(ref int bombaFil, ref int bombaCol, int eneFil, int eneCol, ref bool bombaActiva)
@@ -146,7 +146,7 @@
         #region Renderizados
         static void RenderPlayer(int jugFil, int jugCol)
         {
-            Console.SetCursorPosition(jugFil, jugCol);
+            Console.SetCursorPosition(jugFil, jugCol);          //Se renderiza el jugador en la posición dada
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("O");
 
@@ -156,7 +156,7 @@
             if (balaFil != -1)
             {
 
-                Console.SetCursorPosition(balaFil, balaCol);
+                Console.SetCursorPosition(balaFil, balaCol);    //Se renderiza la bala en la posición dada
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write("^");
 
@@ -164,7 +164,7 @@
         }
         static void RenderEnemigo(int eneFil, int eneCol)
         {
-            Console.SetCursorPosition(eneFil - 1, eneCol);
+            Console.SetCursorPosition(eneFil - 1, eneCol);      //Se renderiza el enemigo teniendo la posicion dada como la central
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("<=>");
         }
@@ -173,7 +173,7 @@
             if (bombaActiva && bombaFil != -1)
             {
                 Console.SetCursorPosition(bombaFil, bombaCol);
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Yellow;  //Se renderiza la bomba en la posición dada
                 Console.Write("*");
             }
         }
@@ -186,15 +186,16 @@
                                int eneFil, int eneCol,
                                ref int finPartida, ref bool bombaActiva)
         {
-            if (balaCol == eneCol && (eneFil - balaFil <= 1 && eneFil - balaFil >= -1))                     //Jugador Gana         
+            if (balaCol == eneCol && (eneFil - balaFil <= 1 && eneFil - balaFil >= -1)) //Jugador Gana         
             {
                 finPartida = 1;
             }
-            else if ((bombaCol == jugCol && bombaFil == jugFil) || (eneCol == jugCol && eneFil == jugFil))  //Jugador Pierde
+            else if ((bombaCol == jugCol && bombaFil == jugFil) ||  
+                    (eneCol == jugCol && eneFil == jugFil))                            //Jugador Pierde
             {
                 finPartida = 2;
             }
-            if (balaCol == bombaCol && balaFil == bombaFil)
+            if (balaCol == bombaCol && balaFil == bombaFil)                            //Bala y Bomba colisionan, ambas se destruyen
             {
                 balaFil = -1;
                 bombaFil = -1;
